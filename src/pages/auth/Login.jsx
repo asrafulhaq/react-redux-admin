@@ -1,7 +1,56 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logoWhite from "../../assets/img/logo-white.png";
+import { useEffect, useState } from "react";
+import { createToast } from "../../utils/toast";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../../features/auth/authApiSlice";
+import { setMessageEmpty } from "../../features/auth/authSlice";
 
 const Login = () => {
+  const dispatch = useDispatch();
+  const { error, message, user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+
+  const [input, setInput] = useState({
+    email: "",
+    password: "",
+  });
+
+  // handle input change
+  const handleInputChange = (e) => {
+    setInput((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  // handle user login
+  const handleUserLogin = (e) => {
+    e.preventDefault();
+
+    // validation
+    if (!input.email || !input.password) {
+      createToast("All fields are required");
+    } else {
+      dispatch(loginUser(input));
+    }
+  };
+
+  useEffect(() => {
+    if (error) {
+      createToast(error);
+      dispatch(setMessageEmpty());
+    }
+    if (message) {
+      createToast(message, "success");
+      dispatch(setMessageEmpty());
+    }
+
+    if (user) {
+      navigate("/");
+    }
+  }, [error, message, user]);
+
   return (
     <>
       <div className="main-wrapper login-body">
@@ -16,12 +65,15 @@ const Login = () => {
                   <h1>Login</h1>
                   <p className="account-subtitle">Access to our dashboard</p>
 
-                  <form action="https://dreamguys.co.in/demo/doccure/admin/index.html">
+                  <form onSubmit={handleUserLogin}>
                     <div className="form-group">
                       <input
                         className="form-control"
                         type="text"
                         placeholder="Email"
+                        name="email"
+                        value={input.email}
+                        onChange={handleInputChange}
                       />
                     </div>
                     <div className="form-group">
@@ -29,6 +81,9 @@ const Login = () => {
                         className="form-control"
                         type="text"
                         placeholder="Password"
+                        name="password"
+                        value={input.password}
+                        onChange={handleInputChange}
                       />
                     </div>
                     <div className="form-group">
